@@ -34,10 +34,17 @@
         <div id="inserir" class="tab-content mt-4">
             <h2 class="text-center text-lg font-bold">Inserir Patrimônio</h2>
             <div class="flex flex-col items-center gap-3 mt-4">
+                
+                <!-- Inserção de Roteador -->
                 <input type="text" id="patrimonioRoteador" class="form-control w-50" placeholder="Código do Roteador">
+                <input type="text" id="tecnicoRoteador" class="form-control w-50" placeholder="Nome do Técnico">
+                <input type="text" id="motivoRoteador" class="form-control w-50" placeholder="Motivo da Troca">
                 <button class="btn btn-primary" onclick="adicionarPatrimonio('Roteador')">Adicionar Roteador</button>
 
+                <!-- Inserção de ONU -->
                 <input type="text" id="patrimonioOnu" class="form-control w-50" placeholder="Código da ONU">
+                <input type="text" id="tecnicoOnu" class="form-control w-50" placeholder="Nome do Técnico">
+                <input type="text" id="motivoOnu" class="form-control w-50" placeholder="Motivo da Troca">
                 <button class="btn btn-primary" onclick="adicionarPatrimonio('Onu')">Adicionar ONU</button>
             </div>
         </div>
@@ -55,6 +62,8 @@
                         <th>Tipo</th>
                         <th>Patrimônio</th>
                         <th>Data e Hora</th>
+                        <th>Nome do Técnico</th>
+                        <th>Motivo da Troca</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
