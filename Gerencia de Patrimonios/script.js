@@ -7,6 +7,7 @@ function salvarDados() {
 function openTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
     document.getElementById(tabName).classList.remove('hidden');
+
     if (tabName === 'dashboard') {
         atualizarDashboard();
     } else if (tabName === 'patrimonios') {
@@ -16,10 +17,15 @@ function openTab(tabName) {
 
 function adicionarPatrimonio(tipo) {
     const inputId = tipo === 'Roteador' ? 'patrimonioRoteador' : 'patrimonioOnu';
-    const valor = document.getElementById(inputId).value.trim();
+    const tecnicoId = tipo === 'Roteador' ? 'tecnicoRoteador' : 'tecnicoOnu';
+    const motivoId = tipo === 'Roteador' ? 'motivoRoteador' : 'motivoOnu';
 
-    if (!valor) {
-        mostrarToast('error', 'Informe um código válido!');
+    const valor = document.getElementById(inputId).value.trim();
+    const tecnico = document.getElementById(tecnicoId).value.trim();
+    const motivo = document.getElementById(motivoId).value.trim();
+
+    if (!valor || !tecnico || !motivo) {
+        mostrarToast('error', 'Preencha todos os campos!');
         return;
     }
 
@@ -28,10 +34,21 @@ function adicionarPatrimonio(tipo) {
         return;
     }
 
-    patrimonios.push({ tipo, valor, dataHora: new Date().toLocaleString("pt-BR") });
+    patrimonios.push({ 
+        tipo, 
+        valor, 
+        tecnico, 
+        motivo, 
+        dataHora: new Date().toLocaleString("pt-BR") 
+    });
+
     salvarDados();
     atualizarTabela();
+
     document.getElementById(inputId).value = '';
+    document.getElementById(tecnicoId).value = '';
+    document.getElementById(motivoId).value = '';
+
     mostrarToast('success', `Patrimônio "${valor}" adicionado com sucesso!`);
 }
 
@@ -42,6 +59,8 @@ function atualizarTabela() {
             <td>${pat.tipo}</td>
             <td>${pat.valor}</td>
             <td>${pat.dataHora}</td>
+            <td>${pat.tecnico}</td>
+            <td>${pat.motivo}</td>
             <td>
                 <button class="btn btn-danger btn-sm" onclick="confirmarRemocao(${index})">Remover</button>
             </td>
@@ -65,13 +84,6 @@ function limparPatrimonios() {
         atualizarTabela();
         mostrarToast('success', 'Todos os patrimônios foram limpos com sucesso!');
     }
-}
-
-function ocultarPatrimonios() {
-    const tbody = document.getElementById("listaPatrimonios");
-    tbody.classList.toggle("hidden");
-    const ocultarBtn = document.querySelector("button[onclick='ocultarPatrimonios()']");
-    ocultarBtn.textContent = tbody.classList.contains("hidden") ? "Mostrar Patrimônios" : "Ocultar Patrimônios Anteriores";
 }
 
 function atualizarDashboard() {
@@ -161,60 +173,9 @@ function mostrarToast(type, message) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    const ocultarPatrimonios = () => {
-        const tabela = document.getElementById("listaPatrimonios");
-        const btn = document.getElementById("btnOcultarPatrimonios");
-        
-        // Alterna a visibilidade da tabela
-        tabela.classList.toggle("hidden");
-        
-        // Atualiza o texto do botão com base no estado atual
-        btn.textContent = tabela.classList.contains("hidden")
-            ? "Mostrar Patrimônios Anteriores"
-            : "Ocultar Patrimônios Anteriores";
-    };
+    document.getElementById("btnOcultarPatrimonios").addEventListener("click", () => {
+        document.getElementById("listaPatrimonios").classList.toggle("hidden");
+    });
 
-    // Adiciona o evento ao botão
-    document.getElementById("btnOcultarPatrimonios").addEventListener("click", ocultarPatrimonios);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    const limparPatrimonios = () => {
-        // Exibe uma confirmação ao usuário
-        if (confirm("Tem certeza que deseja limpar todos os patrimônios?")) {
-            // Remove todos os patrimônios
-            patrimonios = [];
-            salvarDados();
-            atualizarTabela();
-
-            // Mostra mensagem de sucesso
-            exibirToast("Todos os patrimônios foram limpos com sucesso!", "success");
-        }
-    };
-
-    // Adiciona o evento ao botão "Limpar Patrimônios"
     document.getElementById("btnLimparPatrimonios").addEventListener("click", limparPatrimonios);
 });
-
-const exibirToast = (mensagem, tipo) => {
-    const toastContainer = document.getElementById("toast-container");
-    const toast = document.createElement("div");
-    toast.className = `toast align-items-center text-bg-${tipo} border-0 show`;
-    toast.role = "alert";
-    toast.ariaLive = "assertive";
-    toast.ariaAtomic = "true";
-
-    toast.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">${mensagem}</div>
-            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-    `;
-
-    toastContainer.appendChild(toast);
-
-    // Remove o toast após 3 segundos
-    setTimeout(() => {
-        toast.remove();
-    }, 3000);
-};
