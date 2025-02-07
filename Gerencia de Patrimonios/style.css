@@ -1,0 +1,116 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    text-align: center;
+}
+
+.container {
+    max-width: 800px;
+    margin: auto;
+    padding: 20px;
+}
+
+.tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+}
+
+.tab-button {
+    padding: 10px;
+    cursor: pointer;
+    border: none;
+    background: #007bff;
+    color: white;
+}
+
+.tab-button.active {
+    background: #0056b3;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.input-group {
+    margin: 10px 0;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+
+button {
+    padding: 8px;
+    cursor: pointer;
+    background: #28a745;
+    color: white;
+    border: none;
+}
+
+.grafico-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px;
+}
+
+.grafico {
+    display: flex;
+    align-items: flex-end;
+    gap: 40px;
+}
+
+.barra-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.barra {
+    width: 50px;
+    height: 0;
+    text-align: center;
+    line-height: 30px;
+    font-weight: bold;
+    color: white;
+    position: relative;
+    transition: height 0.5s;
+}
+
+#barraRoteador {
+    background-color: blue;
+}
+
+#barraOnu {
+    background-color: green;
+}
+
+.barra span {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 14px;
+    font-weight: bold;
+    color: black;
+}
+
+.data-label {
+    margin-top: 5px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
