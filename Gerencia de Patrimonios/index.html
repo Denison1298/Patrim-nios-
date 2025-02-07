@@ -28,6 +28,7 @@
             <button class="btn btn-primary" onclick="openTab('inserir')">Inserir Patrimônio</button>
             <button class="btn btn-secondary" onclick="openTab('patrimonios')">Patrimônios</button>
             <button class="btn btn-success" onclick="openTab('dashboard')">Dashboard</button>
+            <button class="btn btn-danger" onclick="logout()">Sair</button>
         </div>
 
         <!-- Aba: Inserir Patrimônio -->
@@ -101,6 +102,25 @@
         <div id="toast-container"></div>
     </div>
 
+    <script>
+        const usuarioLogado = localStorage.getItem("usuarioLogado");
+    
+        if (!usuarioLogado) {
+            window.location.href = "login.html"; // Se não estiver logado, redireciona
+        } else if (usuarioLogado !== "adm") {
+            document.addEventListener("DOMContentLoaded", () => {
+                document.getElementById("btnAbaPatrimonios").style.display = "none"; // Oculta a aba para usuários comuns
+            });
+        }
+    </script>
+
+<script>
+    function logout() {
+        localStorage.removeItem("usuarioLogado"); // Remove a sessão
+        window.location.href = "login.html"; // Redireciona para login
+    }
+</script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
