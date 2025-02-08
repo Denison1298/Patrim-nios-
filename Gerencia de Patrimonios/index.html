@@ -102,14 +102,14 @@
         <div id="toast-container"></div>
     </div>
     
-    <!-- Firebase SDK via CDN -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
+<!-- Configuração do Firebase -->
 <script>
-    // Configuração do Firebase
     const firebaseConfig = {
-        apiKey: "SUA_API_KEY",
+        apiKey: "AIzaSyC9Pe71GB73lxPhKU38Hep7JoBC1aL4PJo",
         authDomain: "patrimonios-57aa3.firebaseapp.com",
         databaseURL: "https://patrimonios-57aa3-default-rtdb.firebaseio.com",
         projectId: "patrimonios-57aa3",
@@ -118,8 +118,9 @@
         appId: "1:445004323988:web:0294fcf92592e1be3be881"
     };
 
-    // Inicializa Firebase
     firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+</script>
 
     <script>
         const usuarioLogado = localStorage.getItem("usuarioLogado");
