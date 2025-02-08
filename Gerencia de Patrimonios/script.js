@@ -1,37 +1,7 @@
-function adicionarPatrimonio(tipo) {
-    const usuarioLogado = localStorage.getItem("usuarioLogado");
-    if (!usuarioLogado) return;
+let patrimonios = JSON.parse(localStorage.getItem("patrimonios")) || [];
 
-    const inputId = tipo === 'Roteador' ? 'patrimonioRoteador' : 'patrimonioOnu';
-    const tecnicoId = tipo === 'Roteador' ? 'tecnicoRoteador' : 'tecnicoOnu';
-    const motivoId = tipo === 'Roteador' ? 'motivoRoteador' : 'motivoOnu';
-
-    const valor = document.getElementById(inputId).value.trim();
-    const tecnico = document.getElementById(tecnicoId).value.trim();
-    const motivo = document.getElementById(motivoId).value.trim();
-
-    if (!valor || !tecnico || !motivo) {
-        mostrarToast('error', 'Preencha todos os campos!');
-        return;
-    }
-
-    const novoPatrimonio = {
-        tipo,
-        valor,
-        tecnico,
-        motivo,
-        dataHora: new Date().toLocaleString("pt-BR"),
-        adicionadoPor: usuarioLogado
-    };
-
-    // 🔹 Salva no Firebase
-    database.ref("patrimonios").push(novoPatrimonio);
-
-    document.getElementById(inputId).value = '';
-    document.getElementById(tecnicoId).value = '';
-    document.getElementById(motivoId).value = '';
-
-    mostrarToast('success', `Patrimônio "${valor}" adicionado com sucesso!`);
+function salvarDados() {
+    localStorage.setItem("patrimonios", JSON.stringify(patrimonios));
 }
 
 function openTab(tabName) {
@@ -84,36 +54,25 @@ function adicionarPatrimonio(tipo) {
 
 function atualizarTabela() {
     const tbody = document.getElementById("listaPatrimonios");
-    tbody.innerHTML = '';
-
-    database.ref("patrimonios").on("value", snapshot => {
-        tbody.innerHTML = '';
-
-        snapshot.forEach(childSnapshot => {
-            const pat = childSnapshot.val();
-            const key = childSnapshot.key;
-
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${pat.tipo}</td>
-                <td>${pat.valor}</td>
-                <td>${pat.dataHora}</td>
-                <td>${pat.tecnico}</td>
-                <td>${pat.motivo}</td>
-                <td>${pat.adicionadoPor}</td>
-                <td>
-                    <button class="btn btn-danger btn-sm" onclick="removerPatrimonio('${key}')">Remover</button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-    });
+    tbody.innerHTML = patrimonios.map((pat, index) => `
+        <tr>
+            <td>${pat.tipo}</td>
+            <td>${pat.valor}</td>
+            <td>${pat.dataHora}</td>
+            <td>${pat.tecnico}</td>
+            <td>${pat.motivo}</td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="confirmarRemocao(${index})">Remover</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
-
-function removerPatrimonio(key) {
+function confirmarRemocao(index) {
     if (confirm("Tem certeza que deseja remover este patrimônio?")) {
-        database.ref("patrimonios/" + key).remove();
+        patrimonios.splice(index, 1);
+        salvarDados();
+        atualizarTabela();
         mostrarToast('success', 'Patrimônio removido com sucesso!');
     }
 }
@@ -219,9 +178,4 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btnLimparPatrimonios").addEventListener("click", limparPatrimonios);
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    atualizarTabela(); // 🔹 Atualiza a tabela ao carregar a página
-    atualizarDashboard(); // 🔹 Atualiza o dashboard ao carregar a página
 });
