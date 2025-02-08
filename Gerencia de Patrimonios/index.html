@@ -103,24 +103,23 @@
     </div>
     
 <!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 
-<!-- Configuração do Firebase -->
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyC9Pe71GB73lxPhKU38Hep7JoBC1aL4PJo",
-        authDomain: "patrimonios-57aa3.firebaseapp.com",
-        databaseURL: "https://patrimonios-57aa3-default-rtdb.firebaseio.com",
-        projectId: "patrimonios-57aa3",
-        storageBucket: "patrimonios-57aa3.appspot.com",
-        messagingSenderId: "445004323988",
-        appId: "1:445004323988:web:0294fcf92592e1be3be881"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-</script>
+    <!-- Configuração Firebase -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "API_KEY",
+            authDomain: "PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://PROJECT_ID.firebaseio.com",
+            projectId: "PROJECT_ID",
+            storageBucket: "PROJECT_ID.appspot.com",
+            messagingSenderId: "SENDER_ID",
+            appId: "APP_ID"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+    </script>
 
     <script>
         const usuarioLogado = localStorage.getItem("usuarioLogado");
