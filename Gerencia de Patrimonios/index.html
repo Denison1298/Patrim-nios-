@@ -65,6 +65,7 @@
                         <th>Data e Hora</th>
                         <th>Nome do Técnico</th>
                         <th>Motivo da Troca</th>
+                        <th>Adicionado Por</th> <!-- Novo Campo -->
                         <th>Ações</th>
                     </tr>
                 </thead>
@@ -101,48 +102,7 @@
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
         <div id="toast-container"></div>
     </div>
-    
-<!-- Firebase SDK via CDN -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 
-<script>
-    // Configuração do Firebase (dados corrigidos)
-    const firebaseConfig = {
-        apiKey: "AIzaSyC9Pe71GB73lxPhKU38Hep7JoBC1aL4PJo",
-        authDomain: "patrimonios-57aa3.firebaseapp.com",
-        databaseURL: "https://patrimonios-57aa3-default-rtdb.firebaseio.com",
-        projectId: "patrimonios-57aa3",
-        storageBucket: "patrimonios-57aa3.appspot.com", // 🔹 Corrigido aqui!
-        messagingSenderId: "445004323988",
-        appId: "1:445004323988:web:0294fcf92592e1be3be881"
-    };
-
-    // 🔹 Inicializa o Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-</script>
-
-
-    <script>
-        const usuarioLogado = localStorage.getItem("usuarioLogado");
-    
-        if (!usuarioLogado) {
-            window.location.href = "login.html"; // Se não estiver logado, redireciona
-        } else if (usuarioLogado !== "adm") {
-            document.addEventListener("DOMContentLoaded", () => {
-                document.getElementById("btnAbaPatrimonios").style.display = "none"; // Oculta a aba para usuários comuns
-            });
-        }
-    </script>
-
-<script>
-    function logout() {
-        localStorage.removeItem("usuarioLogado"); // Remove a sessão
-        window.location.href = "login.html"; // Redireciona para login
-    }
-</script>
-    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
