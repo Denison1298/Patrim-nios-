@@ -1,9 +1,7 @@
-let patrimonios = JSON.parse(localStorage.getItem("patrimonios")) || [];
+// 🔹 Conectar ao Firebase Realtime Database
+const database = firebase.database();
 
-function salvarDados() {
-    localStorage.setItem("patrimonios", JSON.stringify(patrimonios));
-}
-
+// 🔹 Abrir abas do sistema
 function openTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
     document.getElementById(tabName).classList.remove('hidden');
@@ -15,7 +13,11 @@ function openTab(tabName) {
     }
 }
 
+// 🔹 Adicionar patrimônio ao Firebase
 function adicionarPatrimonio(tipo) {
+    const usuarioLogado = localStorage.getItem("usuarioLogado");
+    if (!usuarioLogado) return;
+
     const inputId = tipo === 'Roteador' ? 'patrimonioRoteador' : 'patrimonioOnu';
     const tecnicoId = tipo === 'Roteador' ? 'tecnicoRoteador' : 'tecnicoOnu';
     const motivoId = tipo === 'Roteador' ? 'motivoRoteador' : 'motivoOnu';
@@ -29,126 +31,109 @@ function adicionarPatrimonio(tipo) {
         return;
     }
 
-    if (patrimonios.some(p => p.valor === valor)) {
-        mostrarToast('error', `O patrimônio "${valor}" já foi adicionado!`);
-        return;
-    }
+    const novoPatrimonio = {
+        tipo,
+        valor,
+        tecnico,
+        motivo,
+        dataHora: new Date().toLocaleString("pt-BR"),
+        adicionadoPor: usuarioLogado
+    };
 
-    patrimonios.push({ 
-        tipo, 
-        valor, 
-        tecnico, 
-        motivo, 
-        dataHora: new Date().toLocaleString("pt-BR") 
+    // 🔹 Salvar no Firebase
+    database.ref("patrimonios").push(novoPatrimonio)
+    .then(() => {
+        mostrarToast('success', `Patrimônio "${valor}" adicionado com sucesso!`);
+    })
+    .catch(error => {
+        console.error("Erro ao adicionar patrimônio:", error);
+        mostrarToast('error', "Erro ao adicionar patrimônio.");
     });
 
-    salvarDados();
-    atualizarTabela();
-
+    // Limpar os campos após adicionar
     document.getElementById(inputId).value = '';
     document.getElementById(tecnicoId).value = '';
     document.getElementById(motivoId).value = '';
-
-    mostrarToast('success', `Patrimônio "${valor}" adicionado com sucesso!`);
 }
 
+// 🔹 Atualizar a tabela pegando dados do Firebase
 function atualizarTabela() {
     const tbody = document.getElementById("listaPatrimonios");
-    tbody.innerHTML = patrimonios.map((pat, index) => `
-        <tr>
-            <td>${pat.tipo}</td>
-            <td>${pat.valor}</td>
-            <td>${pat.dataHora}</td>
-            <td>${pat.tecnico}</td>
-            <td>${pat.motivo}</td>
-            <td>
-                <button class="btn btn-danger btn-sm" onclick="confirmarRemocao(${index})">Remover</button>
-            </td>
-        </tr>
-    `).join('');
+    tbody.innerHTML = '';
+
+    database.ref("patrimonios").on("value", snapshot => {
+        tbody.innerHTML = '';
+
+        snapshot.forEach(childSnapshot => {
+            const pat = childSnapshot.val();
+            const key = childSnapshot.key;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${pat.tipo}</td>
+                <td>${pat.valor}</td>
+                <td>${pat.dataHora}</td>
+                <td>${pat.tecnico}</td>
+                <td>${pat.motivo}</td>
+                <td>${pat.adicionadoPor}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="removerPatrimonio('${key}')">Remover</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    });
 }
 
-function confirmarRemocao(index) {
+// 🔹 Remover patrimônio do Firebase
+function removerPatrimonio(key) {
     if (confirm("Tem certeza que deseja remover este patrimônio?")) {
-        patrimonios.splice(index, 1);
-        salvarDados();
-        atualizarTabela();
-        mostrarToast('success', 'Patrimônio removido com sucesso!');
+        database.ref("patrimonios/" + key).remove()
+        .then(() => {
+            mostrarToast('success', 'Patrimônio removido com sucesso!');
+        })
+        .catch(error => {
+            console.error("Erro ao remover patrimônio:", error);
+            mostrarToast('error', "Erro ao remover patrimônio.");
+        });
     }
 }
 
+// 🔹 Limpar todos os patrimônios do Firebase
 function limparPatrimonios() {
     if (confirm("Tem certeza que deseja limpar todos os patrimônios?")) {
-        patrimonios = [];
-        salvarDados();
-        atualizarTabela();
-        mostrarToast('success', 'Todos os patrimônios foram limpos com sucesso!');
+        database.ref("patrimonios").remove()
+        .then(() => {
+            mostrarToast('success', 'Todos os patrimônios foram removidos!');
+        })
+        .catch(error => {
+            console.error("Erro ao limpar patrimônios:", error);
+            mostrarToast('error', "Erro ao limpar patrimônios.");
+        });
     }
 }
 
+// 🔹 Atualizar o Dashboard com os dados do Firebase
 function atualizarDashboard() {
-    const totalRoteador = patrimonios.filter(p => p.tipo === 'Roteador').length;
-    const totalOnu = patrimonios.filter(p => p.tipo === 'Onu').length;
+    database.ref("patrimonios").on("value", snapshot => {
+        let totalRoteador = 0;
+        let totalOnu = 0;
+        let totalGeral = 0;
 
-    document.getElementById("totalRoteador").textContent = totalRoteador;
-    document.getElementById("totalOnu").textContent = totalOnu;
-    document.getElementById("totalGeral").textContent = patrimonios.length;
+        snapshot.forEach(childSnapshot => {
+            const pat = childSnapshot.val();
+            totalGeral++;
+            if (pat.tipo === 'Roteador') totalRoteador++;
+            if (pat.tipo === 'Onu') totalOnu++;
+        });
 
-    const groupedByDate = patrimonios.reduce((acc, pat) => {
-        const date = new Date(pat.dataHora).toLocaleDateString('pt-BR');
-        acc[date] = (acc[date] || 0) + 1;
-        return acc;
-    }, {});
-
-    const dates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
-    const counts = dates.map(date => groupedByDate[date]);
-
-    const graficoPatrimonios = document.getElementById('graficoPatrimonios');
-    graficoPatrimonios.innerHTML = '';
-
-    const maxCount = Math.max(...counts, 5);
-    const widthPerBar = 50;
-    const margin = 10;
-
-    const container = document.createElement('div');
-    container.style.display = 'flex';
-    container.style.alignItems = 'flex-end';
-    container.style.justifyContent = 'center';
-    container.style.height = '250px';
-    container.style.borderBottom = '2px solid #000';
-
-    dates.forEach((date, index) => {
-        const barHeight = (counts[index] / maxCount) * 200;
-        const barContainer = document.createElement('div');
-        barContainer.style.width = `${widthPerBar}px`;
-        barContainer.style.margin = `0 ${margin}px`;
-        barContainer.style.textAlign = 'center';
-
-        const bar = document.createElement('div');
-        bar.style.height = `${barHeight}px`;
-        bar.style.backgroundColor = '#007bff';
-        bar.style.width = '100%';
-
-        const label = document.createElement('div');
-        label.style.marginTop = '-20px';
-        label.textContent = counts[index];
-
-        const dateLabel = document.createElement('div');
-        dateLabel.style.marginTop = '5px';
-        dateLabel.textContent = date;
-
-        barContainer.appendChild(label);
-        barContainer.appendChild(bar);
-        barContainer.appendChild(dateLabel);
-        container.appendChild(barContainer);
+        document.getElementById("totalRoteador").textContent = totalRoteador;
+        document.getElementById("totalOnu").textContent = totalOnu;
+        document.getElementById("totalGeral").textContent = totalGeral;
     });
-
-    graficoPatrimonios.appendChild(container);
-
-    const mediaDiaria = (patrimonios.length / dates.length).toFixed(2);
-    document.getElementById("mediaDiaria").textContent = mediaDiaria || '0';
 }
 
+// 🔹 Exibir mensagens com Toast
 function mostrarToast(type, message) {
     const toastId = `toast-${Date.now()}`;
     const toastColor = type === 'success' ? 'bg-success' : 'bg-danger';
@@ -172,10 +157,27 @@ function mostrarToast(type, message) {
     });
 }
 
+// 🔹 Ocultar ou mostrar a tabela de patrimônios
 document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("btnOcultarPatrimonios").addEventListener("click", () => {
-        document.getElementById("listaPatrimonios").classList.toggle("hidden");
-    });
+    const btnOcultar = document.getElementById("btnOcultarPatrimonios");
+    const btnLimpar = document.getElementById("btnLimparPatrimonios");
 
-    document.getElementById("btnLimparPatrimonios").addEventListener("click", limparPatrimonios);
+    if (btnOcultar) {
+        btnOcultar.addEventListener("click", () => {
+            document.getElementById("listaPatrimonios").classList.toggle("hidden");
+        });
+    }
+
+    if (btnLimpar) {
+        btnLimpar.addEventListener("click", limparPatrimonios);
+    }
+
+    atualizarTabela(); // 🔹 Atualiza a tabela ao carregar a página
+    atualizarDashboard(); // 🔹 Atualiza o dashboard ao carregar a página
 });
+
+// 🔹 Função de logout
+function logout() {
+    localStorage.removeItem("usuarioLogado");
+    window.location.href = "login.html";
+}
