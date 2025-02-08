@@ -181,3 +181,90 @@ function logout() {
     localStorage.removeItem("usuarioLogado");
     window.location.href = "login.html";
 }
+
+// 🔹 Verificar carregamento do DOM
+document.addEventListener("DOMContentLoaded", () => {
+    // 🔹 Atualizar tabela e dashboard ao carregar
+    atualizarTabela();
+    atualizarDashboard();
+
+    // 🔹 Configurar botões
+    const btnOcultar = document.getElementById("btnOcultarPatrimonios");
+    const btnLimpar = document.getElementById("btnLimparPatrimonios");
+
+    if (btnOcultar) {
+        btnOcultar.addEventListener("click", () => {
+            document.getElementById("listaPatrimonios").classList.toggle("hidden");
+        });
+    }
+
+    if (btnLimpar) {
+        btnLimpar.addEventListener("click", limparPatrimonios);
+    }
+});
+
+// 🔹 Funções Gerais
+function openTab(tabName) {
+    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+    document.getElementById(tabName).classList.remove('hidden');
+
+    if (tabName === 'dashboard') atualizarDashboard();
+    if (tabName === 'patrimonios') atualizarTabela();
+}
+
+function adicionarPatrimonio(tipo) {
+    const patrimonio = document.getElementById(tipo === 'Roteador' ? 'patrimonioRoteador' : 'patrimonioOnu').value.trim();
+    if (!patrimonio) {
+        mostrarToast('error', 'Preencha todos os campos!');
+        return;
+    }
+
+    // 🔹 Salvar no Firebase
+    const novoPatrimonio = {
+        tipo,
+        valor: patrimonio,
+        dataHora: new Date().toLocaleString("pt-BR"),
+        adicionadoPor: localStorage.getItem("usuarioLogado") || "Desconhecido"
+    };
+
+    database.ref("patrimonios").push(novoPatrimonio).then(() => {
+        mostrarToast('success', `Patrimônio "${patrimonio}" adicionado!`);
+    }).catch(err => console.error(err));
+}
+
+function atualizarTabela() {
+    const tbody = document.getElementById("listaPatrimonios");
+    tbody.innerHTML = '';
+
+    database.ref("patrimonios").on("value", snapshot => {
+        snapshot.forEach(child => {
+            const pat = child.val();
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${pat.tipo}</td>
+                <td>${pat.valor}</td>
+                <td>${pat.dataHora}</td>
+                <td>${pat.adicionadoPor}</td>
+                <td>
+                    <button class="btn btn-danger btn-sm" onclick="removerPatrimonio('${child.key}')">Remover</button>
+                </td>`;
+            tbody.appendChild(tr);
+        });
+    });
+}
+
+function mostrarToast(type, message) {
+    const toastId = `toast-${Date.now()}`;
+    const toastHTML = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0 mb-2" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">${message}</div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    `;
+    document.getElementById('toast-container').insertAdjacentHTML('beforeend', toastHTML);
+
+    const toast = new bootstrap.Toast(document.getElementById(toastId));
+    toast.show();
+}
