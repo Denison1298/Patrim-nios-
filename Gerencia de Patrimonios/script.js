@@ -95,12 +95,19 @@ function atualizarDashboard() {
     document.getElementById("totalGeral").textContent = patrimonios.length;
 
     const groupedByDate = patrimonios.reduce((acc, pat) => {
-        const date = new Date(pat.dataHora).toLocaleDateString('pt-BR');
+        // Formatar a data no formato dd/mm
+        const date = new Date(pat.dataHora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
         acc[date] = (acc[date] || 0) + 1;
         return acc;
     }, {});
 
-    const dates = Object.keys(groupedByDate).sort((a, b) => new Date(a) - new Date(b));
+    const dates = Object.keys(groupedByDate).sort((a, b) => {
+        // Ordenar as datas corretamente
+        const [dayA, monthA] = a.split('/');
+        const [dayB, monthB] = b.split('/');
+        return new Date(2023, monthA - 1, dayA) - new Date(2023, monthB - 1, dayB);
+    });
+
     const counts = dates.map(date => groupedByDate[date]);
 
     const graficoPatrimonios = document.getElementById('graficoPatrimonios');
@@ -135,7 +142,7 @@ function atualizarDashboard() {
 
         const dateLabel = document.createElement('div');
         dateLabel.style.marginTop = '5px';
-        dateLabel.textContent = date;
+        dateLabel.textContent = date; // Formato já ajustado para dd/mm
 
         barContainer.appendChild(label);
         barContainer.appendChild(bar);
