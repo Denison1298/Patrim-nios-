@@ -6,39 +6,70 @@
     <title>Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body class="bg-dark text-white d-flex justify-content-center align-items-center vh-100">
-    <div class="card bg-secondary p-4">
-        <h2 class="text-center">Acesso ao Sistema</h2>
-        <div class="mb-3">
-            <label for="username" class="form-label">Usuário</label>
-            <input type="text" id="username" class="form-control" placeholder="Digite o usuário">
-        </div>
-        <div class="mb-3">
-            <label for="password" class="form-label">Senha</label>
-            <input type="password" id="password" class="form-control" placeholder="Digite a senha">
-        </div>
-        <button class="btn btn-primary w-100" onclick="login()">Entrar</button>
-        <p id="error-message" class="text-danger mt-2 text-center"></p>
+<body class="bg-dark text-white">
+    <div class="container mt-5">
+        <h1 class="text-center">Login</h1>
+        <form id="formLogin" class="mt-4">
+            <div class="mb-3">
+                <label for="nomeLogin" class="form-label">Nome</label>
+                <input type="text" id="nomeLogin" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="senhaLogin" class="form-label">Senha</label>
+                <input type="password" id="senhaLogin" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Entrar</button>
+        </form>
+
+        <hr class="my-4 text-white">
+
+        <h2 class="text-center">Cadastro</h2>
+        <form id="formCadastro" class="mt-4">
+            <div class="mb-3">
+                <label for="nomeCadastro" class="form-label">Nome</label>
+                <input type="text" id="nomeCadastro" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="senhaCadastro" class="form-label">Senha</label>
+                <input type="password" id="senhaCadastro" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Cadastrar</button>
+        </form>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script>
-    function login() {
-        const usuarios = {
-            "adm": "01020",
-            "apoio": "010203"
-        };
+        // Login
+        document.getElementById("formLogin").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById("nomeLogin").value;
+            const senha = document.getElementById("senhaLogin").value;
 
-        const username = document.getElementById("username").value.trim();
-        const password = document.getElementById("password").value.trim();
-        const errorMessage = document.getElementById("error-message");
+            try {
+                const response = await axios.post("login.php", { nome, senha });
+                alert(response.data.message);
+                if (response.data.status === "success") {
+                    localStorage.setItem("usuarioLogado", nome);
+                    window.location.href = "index.html"; // Redireciona para o sistema
+                }
+            } catch (error) {
+                alert("Erro no login!");
+            }
+        });
 
-        if (usuarios[username] && usuarios[username] === password) {
-            localStorage.setItem("usuarioLogado", username); // Salva o usuário logado
-            window.location.href = "index.html"; // Redireciona para o sistema
-        } else {
-            errorMessage.textContent = "Usuário ou senha incorretos!";
-        }
-    }
-</script>
+        // Cadastro
+        document.getElementById("formCadastro").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const nome = document.getElementById("nomeCadastro").value;
+            const senha = document.getElementById("senhaCadastro").value;
+
+            try {
+                const response = await axios.post("cadastrar_usuario.php", { nome, senha });
+                alert(response.data.message);
+            } catch (error) {
+                alert("Erro no cadastro!");
+            }
+        });
+    </script>
 </body>
 </html>
