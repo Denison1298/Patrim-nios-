@@ -107,21 +107,19 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
 
 <script>
-    // Configuração do Firebase (use os dados fornecidos pelo Firebase)
+    // Configuração do Firebase
     const firebaseConfig = {
-        apiKey: "AIzaSyC9Pe71GB73lxPhKU38Hep7JoBC1aL4PJo",
+        apiKey: "SUA_API_KEY",
         authDomain: "patrimonios-57aa3.firebaseapp.com",
         databaseURL: "https://patrimonios-57aa3-default-rtdb.firebaseio.com",
         projectId: "patrimonios-57aa3",
-        storageBucket: "patrimonios-57aa3.firebasestorage.app",
+        storageBucket: "patrimonios-57aa3.appspot.com",
         messagingSenderId: "445004323988",
         appId: "1:445004323988:web:0294fcf92592e1be3be881"
     };
 
-    // Inicializa o Firebase
+    // Inicializa Firebase
     firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-</script>
 
     <script>
         const usuarioLogado = localStorage.getItem("usuarioLogado");
