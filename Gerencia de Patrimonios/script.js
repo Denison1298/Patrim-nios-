@@ -1,5 +1,12 @@
 let patrimonios = JSON.parse(localStorage.getItem("patrimonios")) || [];
 
+// Obter o usuário logado no localStorage
+const usuarioLogado = localStorage.getItem("usuarioLogado");
+
+if (!usuarioLogado) {
+    window.location.href = "login.html"; // Se não estiver logado, redireciona
+}
+
 function salvarDados() {
     localStorage.setItem("patrimonios", JSON.stringify(patrimonios));
 }
@@ -34,11 +41,13 @@ function adicionarPatrimonio(tipo) {
         return;
     }
 
+    // Adicionar patrimônio com o campo 'adicionado_por'
     patrimonios.push({ 
         tipo, 
         valor, 
         tecnico, 
         motivo, 
+        adicionado_por: usuarioLogado, // Adicionar o usuário logado
         dataHora: new Date().toLocaleString("pt-BR") 
     });
 
@@ -61,6 +70,7 @@ function atualizarTabela() {
             <td>${pat.dataHora}</td>
             <td>${pat.tecnico}</td>
             <td>${pat.motivo}</td>
+            <td>${pat.adicionado_por}</td> <!-- Novo campo -->
             <td>
                 <button class="btn btn-danger btn-sm" onclick="confirmarRemocao(${index})">Remover</button>
             </td>
@@ -95,14 +105,12 @@ function atualizarDashboard() {
     document.getElementById("totalGeral").textContent = patrimonios.length;
 
     const groupedByDate = patrimonios.reduce((acc, pat) => {
-        // Formatar a data no formato dd/mm
         const date = new Date(pat.dataHora).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
         acc[date] = (acc[date] || 0) + 1;
         return acc;
     }, {});
 
     const dates = Object.keys(groupedByDate).sort((a, b) => {
-        // Ordenar as datas corretamente
         const [dayA, monthA] = a.split('/');
         const [dayB, monthB] = b.split('/');
         return new Date(2023, monthA - 1, dayA) - new Date(2023, monthB - 1, dayB);
@@ -142,7 +150,7 @@ function atualizarDashboard() {
 
         const dateLabel = document.createElement('div');
         dateLabel.style.marginTop = '5px';
-        dateLabel.textContent = date; // Formato já ajustado para dd/mm
+        dateLabel.textContent = date;
 
         barContainer.appendChild(label);
         barContainer.appendChild(bar);
