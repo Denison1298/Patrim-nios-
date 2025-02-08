@@ -1,37 +1,7 @@
-function adicionarPatrimonio(tipo) {
-    const usuarioLogado = localStorage.getItem("usuarioLogado");
-    if (!usuarioLogado) return;
+let patrimonios = JSON.parse(localStorage.getItem("patrimonios")) || [];
 
-    const inputId = tipo === 'Roteador' ? 'patrimonioRoteador' : 'patrimonioOnu';
-    const tecnicoId = tipo === 'Roteador' ? 'tecnicoRoteador' : 'tecnicoOnu';
-    const motivoId = tipo === 'Roteador' ? 'motivoRoteador' : 'motivoOnu';
-
-    const valor = document.getElementById(inputId).value.trim();
-    const tecnico = document.getElementById(tecnicoId).value.trim();
-    const motivo = document.getElementById(motivoId).value.trim();
-
-    if (!valor || !tecnico || !motivo) {
-        mostrarToast('error', 'Preencha todos os campos!');
-        return;
-    }
-
-    const novoPatrimonio = {
-        tipo,
-        valor,
-        tecnico,
-        motivo,
-        dataHora: new Date().toLocaleString("pt-BR"),
-        adicionadoPor: usuarioLogado
-    };
-
-    // 🔹 Salva no Firebase
-    database.ref("patrimonios").push(novoPatrimonio);
-
-    document.getElementById(inputId).value = '';
-    document.getElementById(tecnicoId).value = '';
-    document.getElementById(motivoId).value = '';
-
-    mostrarToast('success', `Patrimônio "${valor}" adicionado com sucesso!`);
+function salvarDados() {
+    localStorage.setItem("patrimonios", JSON.stringify(patrimonios));
 }
 
 function openTab(tabName) {
