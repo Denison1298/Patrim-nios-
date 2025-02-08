@@ -1,3 +1,10 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const usuarioLogado = localStorage.getItem("usuarioLogado");
+    if (!usuarioLogado) {
+        window.location.href = "login.html"; // Redireciona para login
+    }
+});
+
 let patrimonios = JSON.parse(localStorage.getItem("patrimonios")) || [];
 
 // Obter o usuário logado no localStorage
@@ -193,4 +200,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     document.getElementById("btnLimparPatrimonios").addEventListener("click", limparPatrimonios);
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+    const usuarioLogado = localStorage.getItem("usuarioLogado");
+    console.log("Usuário logado:", usuarioLogado); // Adiciona um log para depuração
+    if (!usuarioLogado) {
+        console.log("Redirecionando para login...");
+        window.location.href = "login.html"; // Redireciona para login
+    }
 });
