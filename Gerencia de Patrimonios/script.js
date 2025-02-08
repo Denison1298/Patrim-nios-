@@ -6,11 +6,8 @@ function openTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
     document.getElementById(tabName).classList.remove('hidden');
 
-    if (tabName === 'dashboard') {
-        atualizarDashboard();
-    } else if (tabName === 'patrimonios') {
-        atualizarTabela();
-    }
+    if (tabName === 'dashboard') atualizarDashboard();
+    if (tabName === 'patrimonios') atualizarTabela();
 }
 
 // 🔹 Adicionar patrimônio ao Firebase
@@ -42,13 +39,13 @@ function adicionarPatrimonio(tipo) {
 
     // 🔹 Salvar no Firebase
     database.ref("patrimonios").push(novoPatrimonio)
-    .then(() => {
-        mostrarToast('success', `Patrimônio "${valor}" adicionado com sucesso!`);
-    })
-    .catch(error => {
-        console.error("Erro ao adicionar patrimônio:", error);
-        mostrarToast('error', "Erro ao adicionar patrimônio.");
-    });
+        .then(() => {
+            mostrarToast('success', `Patrimônio "${valor}" adicionado com sucesso!`);
+        })
+        .catch(error => {
+            console.error("Erro ao adicionar patrimônio:", error);
+            mostrarToast('error', "Erro ao adicionar patrimônio.");
+        });
 
     // Limpar os campos após adicionar
     document.getElementById(inputId).value = '';
@@ -59,8 +56,9 @@ function adicionarPatrimonio(tipo) {
 // 🔹 Atualizar a tabela pegando dados do Firebase
 function atualizarTabela() {
     const tbody = document.getElementById("listaPatrimonios");
-    tbody.innerHTML = '';
+    tbody.innerHTML = '<tr><td colspan="6" class="text-center">Carregando...</td></tr>';
 
+    database.ref("patrimonios").off(); // Remove listeners anteriores
     database.ref("patrimonios").on("value", snapshot => {
         tbody.innerHTML = '';
 
@@ -89,13 +87,13 @@ function atualizarTabela() {
 function removerPatrimonio(key) {
     if (confirm("Tem certeza que deseja remover este patrimônio?")) {
         database.ref("patrimonios/" + key).remove()
-        .then(() => {
-            mostrarToast('success', 'Patrimônio removido com sucesso!');
-        })
-        .catch(error => {
-            console.error("Erro ao remover patrimônio:", error);
-            mostrarToast('error', "Erro ao remover patrimônio.");
-        });
+            .then(() => {
+                mostrarToast('success', 'Patrimônio removido com sucesso!');
+            })
+            .catch(error => {
+                console.error("Erro ao remover patrimônio:", error);
+                mostrarToast('error', "Erro ao remover patrimônio.");
+            });
     }
 }
 
@@ -103,13 +101,13 @@ function removerPatrimonio(key) {
 function limparPatrimonios() {
     if (confirm("Tem certeza que deseja limpar todos os patrimônios?")) {
         database.ref("patrimonios").remove()
-        .then(() => {
-            mostrarToast('success', 'Todos os patrimônios foram removidos!');
-        })
-        .catch(error => {
-            console.error("Erro ao limpar patrimônios:", error);
-            mostrarToast('error', "Erro ao limpar patrimônios.");
-        });
+            .then(() => {
+                mostrarToast('success', 'Todos os patrimônios foram removidos!');
+            })
+            .catch(error => {
+                console.error("Erro ao limpar patrimônios:", error);
+                mostrarToast('error', "Erro ao limpar patrimônios.");
+            });
     }
 }
 
@@ -120,16 +118,24 @@ function atualizarDashboard() {
         let totalOnu = 0;
         let totalGeral = 0;
 
+        const diasUnicos = new Set();
+
         snapshot.forEach(childSnapshot => {
             const pat = childSnapshot.val();
             totalGeral++;
             if (pat.tipo === 'Roteador') totalRoteador++;
             if (pat.tipo === 'Onu') totalOnu++;
+
+            const data = new Date(pat.dataHora.split(" ")[0].split('/').reverse().join('-'));
+            diasUnicos.add(data.toDateString());
         });
+
+        const mediaDiaria = (totalGeral / diasUnicos.size || 0).toFixed(2);
 
         document.getElementById("totalRoteador").textContent = totalRoteador;
         document.getElementById("totalOnu").textContent = totalOnu;
         document.getElementById("totalGeral").textContent = totalGeral;
+        document.getElementById("mediaDiaria").textContent = mediaDiaria;
     });
 }
 
@@ -155,6 +161,13 @@ function mostrarToast(type, message) {
     toastElement.addEventListener('hidden.bs.toast', () => {
         toastElement.remove();
     });
+
+    // Remoção automática após 5 segundos
+    setTimeout(() => {
+        if (document.getElementById(toastId)) {
+            document.getElementById(toastId).remove();
+        }
+    }, 5000);
 }
 
 // 🔹 Ocultar ou mostrar a tabela de patrimônios
@@ -180,91 +193,4 @@ document.addEventListener("DOMContentLoaded", () => {
 function logout() {
     localStorage.removeItem("usuarioLogado");
     window.location.href = "login.html";
-}
-
-// 🔹 Verificar carregamento do DOM
-document.addEventListener("DOMContentLoaded", () => {
-    // 🔹 Atualizar tabela e dashboard ao carregar
-    atualizarTabela();
-    atualizarDashboard();
-
-    // 🔹 Configurar botões
-    const btnOcultar = document.getElementById("btnOcultarPatrimonios");
-    const btnLimpar = document.getElementById("btnLimparPatrimonios");
-
-    if (btnOcultar) {
-        btnOcultar.addEventListener("click", () => {
-            document.getElementById("listaPatrimonios").classList.toggle("hidden");
-        });
-    }
-
-    if (btnLimpar) {
-        btnLimpar.addEventListener("click", limparPatrimonios);
-    }
-});
-
-// 🔹 Funções Gerais
-function openTab(tabName) {
-    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
-    document.getElementById(tabName).classList.remove('hidden');
-
-    if (tabName === 'dashboard') atualizarDashboard();
-    if (tabName === 'patrimonios') atualizarTabela();
-}
-
-function adicionarPatrimonio(tipo) {
-    const patrimonio = document.getElementById(tipo === 'Roteador' ? 'patrimonioRoteador' : 'patrimonioOnu').value.trim();
-    if (!patrimonio) {
-        mostrarToast('error', 'Preencha todos os campos!');
-        return;
-    }
-
-    // 🔹 Salvar no Firebase
-    const novoPatrimonio = {
-        tipo,
-        valor: patrimonio,
-        dataHora: new Date().toLocaleString("pt-BR"),
-        adicionadoPor: localStorage.getItem("usuarioLogado") || "Desconhecido"
-    };
-
-    database.ref("patrimonios").push(novoPatrimonio).then(() => {
-        mostrarToast('success', `Patrimônio "${patrimonio}" adicionado!`);
-    }).catch(err => console.error(err));
-}
-
-function atualizarTabela() {
-    const tbody = document.getElementById("listaPatrimonios");
-    tbody.innerHTML = '';
-
-    database.ref("patrimonios").on("value", snapshot => {
-        snapshot.forEach(child => {
-            const pat = child.val();
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td>${pat.tipo}</td>
-                <td>${pat.valor}</td>
-                <td>${pat.dataHora}</td>
-                <td>${pat.adicionadoPor}</td>
-                <td>
-                    <button class="btn btn-danger btn-sm" onclick="removerPatrimonio('${child.key}')">Remover</button>
-                </td>`;
-            tbody.appendChild(tr);
-        });
-    });
-}
-
-function mostrarToast(type, message) {
-    const toastId = `toast-${Date.now()}`;
-    const toastHTML = `
-        <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0 mb-2" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">${message}</div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
-        </div>
-    `;
-    document.getElementById('toast-container').insertAdjacentHTML('beforeend', toastHTML);
-
-    const toast = new bootstrap.Toast(document.getElementById(toastId));
-    toast.show();
 }
